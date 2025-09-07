@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<title>ODISHABIX - Quiz App</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        margin: 0;
+        padding: 0;
+        color: #fff;
+    }
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1100;
+        text-align: center;
+        padding: 15px 10px;
+        background-color: rgba(0,0,0,1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    header h1 {
+        font-size: 2.5rem;
+        margin: 0;
+        letter-spacing: 2px;
+        color: #ffcc00;
+        flex-grow: 1;
+        user-select: none;
+    }
+    /* Hamburger container */
+    .hamburger-container {
+        position: relative;
+        flex-shrink: 0;
+        margin-left: 10px;
+        margin-right: 35px;
+        cursor: pointer;
+        width: 30px;
+        height: 25px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    /* Hamburger lines */
+    .hamburger-line {
+        height: 4px;
+        background-color: #ffcc00;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+    /* Transform hamburger lines to X on active */
+    .hamburger-container.active .line1 {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+    .hamburger-container.active .line2 {
+        opacity: 0;
+    }
+    .hamburger-container.active .line3 {
+        transform: rotate(-45deg) translate(6px, -6px);
+    }
+    /* Dropdown menu */
+    .dropdown-menu {
+        position: fixed;
+        top: 65px; /* height of header + some margin */
+        right: 10px;
+        background-color: rgba(0,0,0,0.95);
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.7);
+        padding: 15px 20px;
+        width: 200px;
+        display: none;
+        flex-direction: column;
+        z-index: 1099;
+        user-select: none;
+    }
+    .dropdown-menu.show {
+        display: flex;
+    }
+    .dropdown-menu button.menu-item {
+        background: none;
+        border: none;
+        color: #ffcc00;
+        font-size: 1rem;
+        padding: 10px 0;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
+        font-weight: bold;
+        border-bottom: 1px solid rgba(255,204,0,0.3);
+        transition: color 0.3s ease;
+    }
+    .dropdown-menu button.menu-item:last-child {
+        border-bottom: none;
+    }
+    .dropdown-menu button.menu-item:hover {
+        color: #ffaa00;
+    }
+    /* Social media container inside dropdown */
+    .social-media {
+        margin-top: 10px;
+        display: none;
+        justify-content: space-around;
+    }
+    .social-media.show {
+        display: flex;
+    }
+    .social-icon {
+        color: #ffcc00;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        user-select: none;
+        text-decoration: none;
+    }
+    .social-icon:hover {
+        color: #ffaa00;
+    }
+    /* Container margin adjusted for fixed header */
+    .container {
+        max-width: 1000px;
+        margin: 120px auto 30px; /* push down due to fixed header */
+        padding: 20px;
+        user-select: none;
+    }
+    .topic {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .topic:hover {
+        background: rgba(255,255,255,0.2);
+        transform: scale(1.02);
+    }
+    .topic h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .subtopics {
+        display: none;
+        margin-top: 10px;
+        padding-left: 15px;
+    }
+    .subtopics li {
+        list-style: none;
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        margin-bottom: 6px;
+        padding-left: 10px;
+    }
+    .start-btn {
+        background-color: #ffcc00;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        color: #333;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .start-btn:hover {
+        background-color: #ffaa00;
+    }
+    .toggle-icon {
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+    }
+    .rotate {
+        transform: rotate(90deg);
+    }
+
+    /* Common Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1200;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .modal-content {
+        background-color: #222;
+        margin: 5% auto;
+        padding: 20px 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        color: #ffcc00;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 0 15px #ffcc00;
+    }
+
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        color: #ffcc00;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.3s ease;
+    }
+    .close:hover {
+        color: #ffaa00;
+    }
+
+    /* Auth Modal Styles */
+    .auth-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.1);
+    }
+
+    .auth-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        background: transparent;
+        border: none;
+        color: #ffcc00;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+    .auth-tab.active {
+        background: #ffcc00;
+        color: #333;
+    }
+
+    .auth-form {
+        display: none;
+    }
+
+    .auth-form.active {
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #ffcc00;
+        font-weight: bold;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(255,204,0,0.5);
+        border-radius: 5px;
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #ffcc00;
+        box-shadow: 0 0 5px rgba(255,204,0,0.5);
+    }
+
+    .auth-btn {
+        width: 100%;
+        padding: 12px;
+        background: #ffcc00;
+        color: #333;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .auth-btn:hover {
+        background: #ffaa00;
+    }
+
+    .auth-btn:disabled {
+        background: #666;
+        cursor: not-allowed;
+    }
+
+    .forgot-password {
+        display: none;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .forgot-password.show {
+        display: block;
+    }
+
+    .forgot-password a {
+        color: #ffcc00;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .forgot-password a:hover {
+        text-decoration: underline;
+    }
+
+    .error-message {
+        color: #ff4444;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        text-align: center;
+        display: none;
+    }
+
+    .success-message {
+        color: #44ff44;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        text-align: center;
+        display: none;
+    }
+
+    /* About Modal styles */
+    #aboutModal {
+        display: none;
+        position: fixed; 
+        z-index: 1200;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.7);
+    }
+    #aboutModalContent {
+        background-color: #222;
+        margin: 10% auto;
+        padding: 20px 30px;
+        border-radius: 15px;
+        max-width: 600px;
+        color: #ffcc00;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 0 15px #ffcc00;
+    }
+    #aboutModalContent strong {
+        font-weight: bold;
+    }
+    #closeModalBtn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        color: #ffcc00;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.3s ease;
+    }
+    #closeModalBtn:hover {
+        color: #ffaa00;
+    }
+    .social-icon {
+    font-size: 1.8rem;
+    margin: 0 7px;
+    transition: color 0.3s ease;
+    text-decoration: none;
+    vertical-align: middle;
+    }
+    .social-icon.email i {
+        color: #EA4335; /* Red for Gmail/Email */
+    }
+    .social-icon.whatsapp i {
+        color: #25D366; /* WhatsApp green */
+    }
+    .social-icon.telegram i {
+        color: #229ED9; /* Telegram blue */
+    }
+    .social-icon:hover i {
+        color: #ffaa00; /* Highlight all on hover */
+    }
+        /* Subscription Modal & User Modal */
+    #subscriptionModal, #userModal {
+        display: none;
+        position: fixed;
+        z-index: 1200;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.7);
+    }
+    #subscriptionModalContent, #userModalContent {
+        background-color: #222;
+        margin: 10% auto;
+        padding: 20px 30px;
+        border-radius: 15px;
+        max-width: 600px;
+        color: #ffcc00;
+        font-size: 1.1rem;
+        line-height: 1.5;
+        position: relative;
+        box-shadow: 0 0 15px #ffcc00;
+    }
+    #subscriptionModalContent h2, #userModalContent h2 {
+        margin-top: 0;
+        text-align: center;
+    }
+    #subscriptionModalContent .plan {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+        text-align: center;
+        cursor: pointer;
+    }
+    #subscriptionModalContent .plan.selected {
+        border: 2px solid #ffcc00;
+        box-shadow: 0 0 10px #ffaa00;
+    }
+    #subscriptionModalContent button.buy-btn {
+        background-color: #ffcc00;
+        color: #333;
+        border: none;
+        padding: 8px 15px;
+        margin-top: 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    #subscriptionModalContent button.buy-btn:hover {
+        background-color: #ffaa00;
+    }
+    .closeBtn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        color: #ffcc00;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    .closeBtn:hover {
+        color: #ffaa00;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-spinner {
+        border: 4px solid rgba(255,204,0,0.3);
+        border-top: 4px solid #ffcc00;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+</head>
+<body>
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<header>
+    <h1>
+      ODISHABIX
+    </h1>
+    <div class="hamburger-container" id="hamburgerBtn" aria-label="Menu" role="button" tabindex="0" aria-expanded="false">
+        <div class="hamburger-line line1"></div>
+        <div class="hamburger-line line2"></div>
+        <div class="hamburger-line line3"></div>
+    </div>
+</header>
+
+<!-- Dropdown menu with items -->
+<div class="dropdown-menu" id="dropdownMenu" aria-hidden="true">
+    <button class="menu-item" id="userbtn">User Name</button>
+    <button class="menu-item" id="subscriptionBtn">Subscription</button>
+    <button class="menu-item" id="logoutBtn" style="display: none;">Logout</button>
+    <button class="menu-item" id="contactsBtn">Contacts</button>
+    <button class="menu-item" id="aboutBtn">About Us</button>
+    <!-- Social media icons container -->
+    <div class="social-media" id="socialMediaIcons" aria-label="Social media contacts">
+        <a href="mailto:odishabix@gmail.com" class="social-icon email" title="Email" target="_blank" rel="noopener noreferrer" aria-label="Email">
+            <i class="fas fa-envelope"></i>
+        </a>
+        <a href="https://wa.me/7008320927" class="social-icon whatsapp" title="WhatsApp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="https://t.me/+kZ8bABUTKxFIM2VI" class="social-icon telegram" title="Telegram" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+            <i class="fab fa-telegram-plane"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Authentication Modal -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeAuthModal">&times;</span>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTab">Login</button>
+            <button class="auth-tab" id="signupTab">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form active">
+            <h2 style="text-align: center; margin-bottom: 20px;">Welcome Back!</h2>
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="auth-btn" id="loginBtn">Login</button>
+            </form>
+            <div class="forgot-password" id="forgotPasswordLink">
+                <a href="#" id="forgotPasswordBtn">Forgot Password?</a>
+            </div>
+            <div class="error-message" id="loginError"></div>
+            <div class="success-message" id="loginSuccess"></div>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signupForm" class="auth-form">
+            <h2 style="text-align: center; margin-bottom: 20px;">Create Account</h2>
+            <form id="signupFormElement">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupMobile">Mobile Number</label>
+                    <input type="tel" id="signupMobile" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <button type="submit" class="auth-btn" id="signupBtn">Sign Up</button>
+            </form>
+            <div class="error-message" id="signupError"></div>
+            <div class="success-message" id="signupSuccess"></div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordForm" class="auth-form">
+            <h2 style="text-align: center; margin-bottom: 20px;">Reset Password</h2>
+            <form id="forgotPasswordFormElement">
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" required>
+                </div>
+                <button type="submit" class="auth-btn" id="resetPasswordBtn">Send Reset Link</button>
+                <button type="button" class="auth-btn" id="backToLoginBtn" style="background: #666; margin-top: 10px;">Back to Login</button>
+            </form>
+            <div class="error-message" id="forgotError"></div>
+            <div class="success-message" id="forgotSuccess"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for About Us -->
+<div id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle" aria-hidden="true">
+    <div id="aboutModalContent">
+        <button id="closeModalBtn" aria-label="Close About Us modal">&times;</button>
+        <div id="aboutModalText"></div>
+    </div>
+</div>
+
+<!-- Subscription Modal -->
+<div id="subscriptionModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="subscriptionModalContent">
+        <button class="closeBtn" id="closeSubscriptionBtn">&times;</button>
+        <h2>Choose Your Subscription</h2>
+        <div class="plan" data-price="30" data-days="30">
+            <p><strong>₹29</strong> - 31 Days</p>
+            <button class="buy-btn">Buy Now</button>
+        </div>
+        <div class="plan" data-price="150" data-days="180">
+            <p><strong>₹149</strong> - 180 Days</p>
+            <button class="buy-btn">Buy Now</button>
+        </div>
+        <div class="plan" data-price="200" data-days="365">
+            <p><strong>₹199</strong> - 365 Days</p>
+            <button class="buy-btn">Buy Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- User Info Modal -->
+<div id="userModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="userModalContent">
+        <button class="closeBtn" id="closeUserBtn">&times;</button>
+        <h2>Your Information</h2>
+        <div id="userInfo">
+            <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+            <p><strong>Mobile Number:</strong> <span id="userMobile">Loading...</span></p>
+            <p><strong>Remaining Subscription:</strong> <span id="userSubscription">25 days left</span></p>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="topics-container"></div>
+
+<!-- Supabase JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // SUPABASE CONFIGURATION
+    const SUPABASE_URL = 'https://bsrkmrftzhyprmcgzlln.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzcmttcmZ0emh5cHJtY2d6bGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMTczNTYsImV4cCI6MjA3Mjc5MzM1Nn0.eipabTRkdctNg2yjdTubhyoVw4zt97gzV7P4whCqd0s';
+
+    
+    // Initialize Supabase client - Use window.supabase
+    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Then rename the variable
+    const supabase = supabaseInstance;
+
+    // Global variables
+    let currentUser = null;
+    let isAuthenticated = false;
+
+    // QUIZ DATA
+    const quizData = [
+        {
+            title: "Current Affairs",
+            subtopics: [
+                "August 2025",
+				"August Odisha CA 2025",
+                "july 2025",
+				"July Odisha CA 2025",
+				"June 2025",
+				"june Odisha CA 2025"
+            ]
+        },
+        {
+            title: "Computer",
+            subtopics: [
+                "MS Word",
+                "MS Excel",
+                "MS PowerPoint",
+                "MS Access",
+                "Internet and Networking",
+                "OS & Emails & Ports",
+                "Abbreviations"
+            ]
+        },
+        {
+            title: "History",
+            subtopics: [
+                "Ancient India History",
+                "Ancient Odisha History",
+                "Medieval India History",
+                "Medieval Odisha History",
+                "Modern India History",
+                "Modern Odisha History"
+            ]
+        },
+        {
+            title: "Geography",
+            subtopics: [
+                "World Geography",
+                "Indian Geography",
+                "Odisha Geography"
+            ]
+        },
+        {
+            title: "Polity",
+            subtopics: [
+                "Indian Polity",
+                "Odisha Polity"
+            ]
+        },
+        {
+            title: "Economics",
+            subtopics: [
+                "Indian Economy",
+                "Budget & Finance"
+            ]
+        },
+        {
+            title: "Environment",
+            subtopics: [
+                "Climate Change",
+                "Biodiversity",
+                "Environmental Policies"
+            ]
+        },
+        {
+            title: "General Science",
+            subtopics: [
+                "Physics",
+                "Chemistry",
+                "Biology"
+            ]
+        },
+        {
+            title: "English",
+            subtopics: [
+                "Error detection",
+                "Sentence improvement",
+                "Direct & Indirect Speech",
+                "Active & Passive Voice",
+                "Idioms",
+                "Phrasal Verbs",
+                "One word Substitution",
+                "Articles",
+                "Prepositions",
+                "Fill in the Blanks"
+            ]
+        },
+        {
+            title: "Odia",
+            subtopics: [
+                "ସାଧାରଣ ବ୍ୟାକରଣ",
+                "ପ୍ରତିଶବ୍ଦ",
+                "ବିପରୀତ ଶବ୍ଦ",
+                "ଶୁଦ୍ଧି ଅଶୁଦ୍ଧି",
+                "କ୍ରିୟା",
+                "ସମାସ",
+                "କାରକ ଓ ବିଭକ୍ତି",
+                "ସମୋଚ୍ଚାରିତ ଶବ୍ଦ",
+                "କାଳ",
+                "ରୂଢ଼ି ଓ ଲୋକବାଣୀ",
+                "ସନ୍ଧି"
+            ]
+        }
+    ];
+
+    // DOM Elements
+    const authModal = document.getElementById('authModal');
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const closeAuthModal = document.getElementById('closeAuthModal');
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    const backToLoginBtn = document.getElementById('backToLoginBtn');
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const userBtn = document.getElementById('userbtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAuthState();
+        setupEventListeners();
+        renderTopics();
+    });
+
+    // Check authentication state on page load
+    // Check authentication state on page load
+    async function checkAuthState() {
+    showLoading(true);
+
+    try {
+        // First, check if a session exists in localStorage
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+            console.error("Error getting session:", sessionError.message);
+        }
+
+        if (session && session.user) {
+            // Session found
+            currentUser = session.user;
+            isAuthenticated = true;
+            await loadUserProfile();
+            updateUIForAuthenticatedUser();
+        } else {
+            // No session, fall back to getUser()
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+            if (userError) {
+                console.error("Error getting user:", userError.message);
+            }
+
+            if (user) {
+                currentUser = user;
+                isAuthenticated = true;
+                await loadUserProfile();
+                updateUIForAuthenticatedUser();
+            } else {
+                // Not logged in → show guest UI + auth modal
+                isAuthenticated = false;
+                updateUIForGuestUser();
+                showAuthModal();
+            }
+        }
+    } catch (error) {
+        console.error("Auth check error:", error);
+        isAuthenticated = false;
+        updateUIForGuestUser();
+        showAuthModal();
+    } finally {
+        // ✅ Always hide loader
+        showLoading(false);
+    }
+}
+
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Auth modal event listeners
+        loginTab.addEventListener('click', () => switchAuthTab('login'));
+        signupTab.addEventListener('click', () => switchAuthTab('signup'));
+        closeAuthModal.addEventListener('click', closeAuthModalHandler);
+        forgotPasswordBtn.addEventListener('click', showForgotPasswordForm);
+        backToLoginBtn.addEventListener('click', () => switchAuthTab('login'));
+
+        // Form submissions
+        document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+        document.getElementById('signupFormElement').addEventListener('submit', handleSignup);
+        document.getElementById('forgotPasswordFormElement').addEventListener('submit', handleForgotPassword);
+
+        // User menu
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                closeAuthModalHandler();
+            }
+        });
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                isAuthenticated = true;
+                await loadUserProfile();
+                updateUIForAuthenticatedUser();
+                closeAuthModalHandler();
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                isAuthenticated = false;
+                updateUIForGuestUser();
+            } else if (event === 'PASSWORD_RECOVERY') {
+                // Handle password recovery
+                showMessage('forgotSuccess', 'Please check your email for password reset instructions.');
+            }
+        });
+    }
+
+    function showLoading(show) {
+    const overlay = document.getElementById("loadingOverlay");
+    if (!overlay) return;
+    overlay.style.display = show ? "flex" : "none";
+    }
+
+
+    // Show authentication modal
+    function showAuthModal() {
+        authModal.style.display = 'block';
+        switchAuthTab('login');
+    }
+
+    // Close authentication modal (only if user is authenticated)
+    function closeAuthModalHandler() {
+        if (isAuthenticated) {
+            authModal.style.display = 'none';
+        }
+    }
+
+    // Switch between login/signup tabs
+    function switchAuthTab(tab) {
+        // Clear all error/success messages
+        clearMessages();
+
+        if (tab === 'login') {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.classList.add('active');
+            signupForm.classList.remove('active');
+            forgotPasswordForm.classList.remove('active');
+        } else if (tab === 'signup') {
+            signupTab.classList.add('active');
+            loginTab.classList.remove('active');
+            signupForm.classList.add('active');
+            loginForm.classList.remove('active');
+            forgotPasswordForm.classList.remove('active');
+        }
+    }
+
+    // Show forgot password form
+    function showForgotPasswordForm(e) {
+        e.preventDefault();
+        loginForm.classList.remove('active');
+        signupForm.classList.remove('active');
+        forgotPasswordForm.classList.add('active');
+        loginTab.classList.remove('active');
+        signupTab.classList.remove('active');
+        clearMessages();
+    }
+
+    // Handle login
+    async function handleLogin(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!email || !password) {
+            showMessage('loginError', 'Please fill in all fields.');
+            return;
+        }
+
+        showLoading(true);
+        clearMessages();
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            showLoading(false);
+
+            if (error) {
+                if (error.message.includes('Invalid login credentials')) {
+                    showMessage('loginError', 'Invalid email or password. Please try again.');
+                    forgotPasswordLink.classList.add('show');
+                } else if (error.message.includes('Email not confirmed')) {
+                    showMessage('loginError', 'Please check your email and confirm your account first.');
+                } else {
+                    showMessage('loginError', error.message);
+                }
+            } else {
+                showMessage('loginSuccess', 'Login successful! Welcome back.');
+                // Auth state change will be handled by the listener
+            }
+        } catch (error) {
+            showLoading(false);
+            showMessage('loginError', 'An unexpected error occurred. Please try again.');
+            console.error('Login error:', error);
+        }
+    }
+
+    // Handle signup
+    async function handleSignup(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('signupName').value.trim();
+        const mobile = document.getElementById('signupMobile').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value;
+
+        if (!name || !mobile || !email || !password) {
+            showMessage('signupError', 'Please fill in all fields.');
+            return;
+        }
+
+        if (password.length < 6) {
+            showMessage('signupError', 'Password must be at least 6 characters long.');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showMessage('signupError', 'Please enter a valid email address.');
+            return;
+        }
+
+        if (!/^[0-9]{10}$/.test(mobile)) {
+            showMessage('signupError', 'Please enter a valid 10-digit mobile number.');
+            return;
+        }
+
+        showLoading(true);
+        clearMessages();
+
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        full_name: name,
+                        mobile_number: mobile,
+                    }
+                }
+            });
+
+            showLoading(false);
+
+            if (error) {
+                if (error.message.includes('User already registered')) {
+                    showMessage('signupError', 'An account with this email already exists. Please login instead.');
+                } else {
+                    showMessage('signupError', error.message);
+                }
+            } else {
+                showMessage('signupSuccess', 'Account created successfully! Please check your email to confirm your account.');
+                // Switch to login tab after successful signup
+                setTimeout(() => {
+                    switchAuthTab('login');
+                }, 3000);
+            }
+        } catch (error) {
+            showLoading(false);
+            showMessage('signupError', 'An unexpected error occurred. Please try again.');
+            console.error('Signup error:', error);
+        }
+    }
+
+    // Handle forgot password
+    async function handleForgotPassword(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('resetEmail').value.trim();
+
+        if (!email) {
+            showMessage('forgotError', 'Please enter your email address.');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showMessage('forgotError', 'Please enter a valid email address.');
+            return;
+        }
+
+        showLoading(true);
+        clearMessages();
+
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/reset-password.html',
+            });
+
+            showLoading(false);
+
+            if (error) {
+                showMessage('forgotError', error.message);
+            } else {
+                showMessage('forgotSuccess', 'Password reset email sent! Please check your email for instructions.');
+            }
+        } catch (error) {
+            showLoading(false);
+            showMessage('forgotError', 'An unexpected error occurred. Please try again.');
+            console.error('Forgot password error:', error);
+        }
+    }
+
+    // Handle logout
+    async function handleLogout() {
+        showLoading(true);
+
+        try {
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+                console.error('Logout error:', error);
+                showLoading(false);
+            } else {
+                // Clear user data
+                currentUser = null;
+                isAuthenticated = false;
+                showLoading(false);
+
+                // Redirect to home page
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            showLoading(false);
+        }
+    }
+
+    // Load user profile from database
+    async function loadUserProfile() {
+        if (!currentUser) return;
+
+        try {
+            const { data: profile, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.error('Error loading profile:', error);
+                return;
+            }
+
+            // Update user info in the modal
+            if (profile) {
+                document.getElementById('userName').textContent = profile.full_name || currentUser.user_metadata.full_name || 'User';
+                document.getElementById('userEmail').textContent = profile.email || currentUser.email;
+                document.getElementById('userMobile').textContent = profile.mobile_number || currentUser.user_metadata.mobile_number || 'Not provided';
+            }
+        } catch (error) {
+            console.error('Error loading user profile:', error);
+        }
+    }
+
+    // Update UI for authenticated user
+    function updateUIForAuthenticatedUser() {
+        // Update user button text
+        const userName = currentUser?.user_metadata?.full_name || 'User';
+        userBtn.textContent = userName;
+
+        // Show logout button
+        logoutBtn.style.display = 'block';
+    }
+
+    // Update UI for guest user
+    function updateUIForGuestUser() {
+        userBtn.textContent = 'Login';
+        logoutBtn.style.display = 'none';
+    }
+
+    // Show messages
+    function showMessage(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.style.display = 'block';
+
+        // Hide after 5 seconds for success messages
+        if (elementId.includes('Success')) {
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    // Clear all messages
+    function clearMessages() {
+        const messages = ['loginError', 'loginSuccess', 'signupError', 'signupSuccess', 'forgotError', 'forgotSuccess'];
+        messages.forEach(id => {
+            const element = document.getElementById(id);
+            element.style.display = 'none';
+            element.textContent = '';
+        });
+        forgotPasswordLink.classList.remove('show');
+    }
+
+    // Render topics dynamically
+    function renderTopics() {
+        const container = document.getElementById('topics-container');
+        quizData.forEach(topic => {
+            const topicDiv = document.createElement('div');
+            topicDiv.className = 'topic';
+            topicDiv.onclick = function() { toggleSubtopics(topicDiv) };
+            const h2 = document.createElement('h2');
+            h2.innerHTML = `${topic.title} <span class="toggle-icon">▶</span>`;
+            topicDiv.appendChild(h2);
+            const ul = document.createElement('ul');
+            ul.className = 'subtopics';
+            topic.subtopics.forEach(sub => {
+                const li = document.createElement('li');
+                li.innerHTML = `${sub} <button class="start-btn" onclick="startQuiz(event,'${slugify(topic.title)}-${slugify(sub)}')">Start Quiz</button>`;
+                ul.appendChild(li);
+            });
+            topicDiv.appendChild(ul);
+            container.appendChild(topicDiv);
+        });
+    }
+
+    // Convert to slug for URLs
+    function slugify(text) {
+        return text.toString()
+                   .toLowerCase()
+                   .trim()
+                   .replace(/[\s&]+/g, '-')
+                   .replace(/[^\w\-]+/g, '');
+    }
+
+    // Toggle subtopics visibility
+    function toggleSubtopics(topicElement) {
+        const subtopics = topicElement.querySelector('.subtopics');
+        const icon = topicElement.querySelector('.toggle-icon');
+        if (subtopics.style.display === 'block') {
+            subtopics.style.display = 'none';
+            icon.classList.remove('rotate');
+        } else {
+            subtopics.style.display = 'block';
+            icon.classList.add('rotate');
+        }
+    }
+
+    // Redirect to quiz page (only if authenticated)
+    function startQuiz(event, quizId) {
+        event.stopPropagation();
+
+        if (!isAuthenticated) {
+            showAuthModal();
+            return;
+        }
+
+        window.location.href = quizId + ".html";
+    }
+
+    // Hamburger & dropdown menu handling
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const contactsBtn = document.getElementById('contactsBtn');
+    const socialMediaIcons = document.getElementById('socialMediaIcons');
+    const aboutBtn = document.getElementById('aboutBtn');
+    const aboutModal = document.getElementById('aboutModal');
+    const aboutModalText = document.getElementById('aboutModalText');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    hamburgerBtn.addEventListener('click', () => {
+        const isActive = hamburgerBtn.classList.toggle('active');
+        if (isActive) {
+            dropdownMenu.classList.add('show');
+            hamburgerBtn.setAttribute('aria-expanded', 'true');
+        } else {
+            dropdownMenu.classList.remove('show');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            socialMediaIcons.classList.remove('show');
+            hideModal();
+        }
+    });
+
+    hamburgerBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            hamburgerBtn.click();
+        }
+    });
+
+    // Handle user button click
+    userBtn.addEventListener('click', () => {
+        if (isAuthenticated) {
+            // Show user modal
+            dropdownMenu.classList.remove('show');
+            hamburgerBtn.classList.remove('active');
+            document.getElementById('userModal').style.display = 'block';
+        } else {
+            // Show auth modal
+            dropdownMenu.classList.remove('show');
+            hamburgerBtn.classList.remove('active');
+            showAuthModal();
+        }
+    });
+
+    contactsBtn.addEventListener('click', () => {
+        socialMediaIcons.classList.toggle('show');
+        hideModal();
+    });
+
+    aboutBtn.addEventListener('click', () => {
+        // Hide dropdown & social icons
+        dropdownMenu.classList.remove('show');
+        hamburgerBtn.classList.remove('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        socialMediaIcons.classList.remove('show');
+
+        // Show modal with about text
+        aboutModalText.innerHTML = `
+          Welcome to ODISHABIX, a dedicated platform crafted to empower government job aspirants in Odisha. We understand the unique challenges and aspirations of individuals seeking a career in the state government, and we're committed to providing the most effective and accessible tools to help you succeed.
+          <br><br>
+          At ODISHABIX, our mission is to make government job preparation in Odisha <strong>smarter, more engaging, and ultimately, more achievable</strong>.
+          We believe in the power of focused practice, continuous learning, and staying updated with the latest exam patterns and information relevant to Odisha government examinations.
+        `;
+        showModal();
+    });
+
+    closeModalBtn.addEventListener('click', hideModal);
+
+    // Close modal if clicked outside of content
+    aboutModal.addEventListener('click', e => {
+        if (e.target === aboutModal) {
+            hideModal();
+        }
+    });
+
+    function showModal() {
+        aboutModal.style.display = 'block';
+        aboutModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideModal() {
+        aboutModal.style.display = 'none';
+        aboutModal.setAttribute('aria-hidden', 'true');
+    }
+
+    // SUBSCRIPTION MODAL HANDLING
+    const subscriptionBtn = document.getElementById('subscriptionBtn');
+    const subscriptionModal = document.getElementById('subscriptionModal');
+    const closeSubscriptionBtn = document.getElementById('closeSubscriptionBtn');
+    const plans = document.querySelectorAll('#subscriptionModalContent .plan');
+
+    subscriptionBtn.addEventListener('click', () => {
+        if (!isAuthenticated) {
+            dropdownMenu.classList.remove('show');
+            hamburgerBtn.classList.remove('active');
+            showAuthModal();
+            return;
+        }
+
+        dropdownMenu.classList.remove('show');
+        hamburgerBtn.classList.remove('active');
+        subscriptionModal.style.display = 'block';
+    });
+
+    closeSubscriptionBtn.addEventListener('click', () => {
+        subscriptionModal.style.display = 'none';
+    });
+
+    plans.forEach(plan => {
+        plan.addEventListener('click', () => {
+            plans.forEach(p => p.classList.remove('selected'));
+            plan.classList.add('selected');
+        });
+        plan.querySelector('.buy-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            plans.forEach(p => p.classList.remove('selected'));
+            plan.classList.add('selected');
+            const price = plan.getAttribute('data-price');
+            const days = plan.getAttribute('data-days');
+            window.location.href = `payment.html?price=${price}&days=${days}`;
+        });
+    });
+
+    // USER INFO MODAL HANDLING
+    const userModal = document.getElementById('userModal');
+    const closeUserBtn = document.getElementById('closeUserBtn');
+
+    closeUserBtn.addEventListener('click', () => {
+        userModal.style.display = 'none';
+    });
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === subscriptionModal) {
+            subscriptionModal.style.display = 'none';
+        }
+        if (e.target === userModal) {
+            userModal.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
