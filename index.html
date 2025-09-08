@@ -822,48 +822,51 @@
 
 	
     async function checkAuthState() {
-    showLoading(true);
-    console.log("Auth check started...");
+  showLoading(true);
+  console.log("Auth check started...");
 
-    try {
-        // First check session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log("getSession result:", session, sessionError);
+  try {
+    console.log("Calling getSession...");
+    const { data, error } = await supabase.auth.getSession();
+    console.log("getSession result:", data, error);
 
-        if (session?.user) {
-            console.log("Session found:", session.user.email);
-            currentUser = session.user;
-            isAuthenticated = true;
-            await loadUserProfile();
-            updateUIForAuthenticatedUser();
-        } else {
-            console.log("No session, checking getUser()...");
+    if (error) {
+      console.error("Session error:", error.message);
+    }
 
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            console.log("getUser result:", user, userError);
+    if (data?.session?.user) {
+      console.log("✅ Session found:", data.session.user.email);
+      currentUser = data.session.user;
+      isAuthenticated = true;
+      await loadUserProfile();
+      updateUIForAuthenticatedUser();
+    } else {
+      console.log("⚠️ No session, checking getUser...");
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      console.log("getUser result:", userData, userError);
 
-            if (user) {
-                console.log("User found:", user.email);
-                currentUser = user;
-                isAuthenticated = true;
-                await loadUserProfile();
-                updateUIForAuthenticatedUser();
-            } else {
-                console.log("No active session → showing login modal");
-                isAuthenticated = false;
-                updateUIForGuestUser();
-                showAuthModal();
-            }
-        }
-    } catch (err) {
-        console.error("Auth check fatal error:", err);
+      if (userData?.user) {
+        console.log("✅ User found:", userData.user.email);
+        currentUser = userData.user;
+        isAuthenticated = true;
+        await loadUserProfile();
+        updateUIForAuthenticatedUser();
+      } else {
+        console.log("❌ No active session → showing login modal");
         isAuthenticated = false;
         updateUIForGuestUser();
         showAuthModal();
-    } finally {
-        console.log("Auth check finished → hiding loader");
-        showLoading(false);
+      }
     }
+  } catch (err) {
+    console.error("Auth check fatal error:", err);
+    isAuthenticated = false;
+    updateUIForGuestUser();
+    showAuthModal();
+  } finally {
+    console.log("Auth check finished → hiding loader");
+    showLoading(false);
+  }
 }
 
 
@@ -1415,6 +1418,7 @@
 </body>
 
 </html>
+
 
 
 
