@@ -813,55 +813,56 @@
         renderTopics();
     });
 
-    // Check authentication state on page load
-    // Check authentication state on page load
+	
     async function checkAuthState() {
     showLoading(true);
 
     try {
-        // First, check if a session exists in localStorage
+        // First check session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) {
-            console.error("Error getting session:", sessionError.message);
+            console.error("Session error:", sessionError.message);
         }
 
-        if (session && session.user) {
-            // Session found
+        if (session?.user) {
+            console.log("Session found:", session.user.email);
             currentUser = session.user;
             isAuthenticated = true;
             await loadUserProfile();
             updateUIForAuthenticatedUser();
         } else {
-            // No session, fall back to getUser()
+            // No session, try getUser
             const { data: { user }, error: userError } = await supabase.auth.getUser();
 
             if (userError) {
-                console.error("Error getting user:", userError.message);
+                console.error("User fetch error:", userError.message);
             }
 
             if (user) {
+                console.log("User found:", user.email);
                 currentUser = user;
                 isAuthenticated = true;
                 await loadUserProfile();
                 updateUIForAuthenticatedUser();
             } else {
-                // Not logged in → show guest UI + auth modal
+                console.log("No active session. Showing login modal.");
                 isAuthenticated = false;
                 updateUIForGuestUser();
                 showAuthModal();
             }
         }
-    } catch (error) {
-        console.error("Auth check error:", error);
+    } catch (err) {
+        console.error("Auth check fatal error:", err);
         isAuthenticated = false;
         updateUIForGuestUser();
         showAuthModal();
     } finally {
-        // ✅ Always hide loader
+        // ✅ ALWAYS hide loader
         showLoading(false);
     }
 }
+
 
 
     // Setup event listeners
@@ -1395,6 +1396,13 @@
             userModal.style.display = 'none';
         }
     });
+
+	// Prevent infinite loading overlay (auto-hide after 5s)
+	setTimeout(() => {
+    showLoading(false);
+	}, 5000);
+
 </script>
 </body>
+
 </html>
