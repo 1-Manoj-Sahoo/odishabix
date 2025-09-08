@@ -679,7 +679,7 @@
     const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
  	auth: {
     persistSession: true,   // ✅ make sure session is saved
-    autoRefreshToken: true  // ✅ refresh session automatically
+    autoRefreshToken: true,  // ✅ refresh session automatically
 	detectSessionInUrl: true
   	}
 	});
@@ -1432,6 +1432,7 @@
 </body>
 
 </html>
+
 
 
 
