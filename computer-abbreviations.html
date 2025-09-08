@@ -51,30 +51,7 @@
         .timer { font-size: 1.2em; font-weight: bold; }
         .search-box { width: 120px; }
     </style>
-    <!-- 1. ADD SUPABASE CDN FIRST -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- 2. ADD AUTHENTICATION SNIPPET HERE -->
-    <script>
-        // SUPABASE CONFIGURATION
-        const SUPABASE_URL = 'https://bsrkmrftzhyprmcgzlln.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzcmttcmZ0emh5cHJtY2d6bGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMTczNTYsImV4cCI6MjA3Mjc5MzM1Nn0.eipabTRkdctNg2yjdTubhyoVw4zt97gzV7P4whCqd0s';
-        
-           // Initialize Supabase client - Use window.supabase
-    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Then rename the variable
-    const supabase = supabaseInstance;
-
-        // Check if user is authenticated
-       supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-        // No session → redirect to login
-        window.location.href = "index.html";
-    }
-    });
-
-    </script>
 </head>
 <body class="bg-light">
     	<header>
@@ -98,7 +75,30 @@
     <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/2964/2964.wav"></audio>
     <audio id="sound-timeup" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 
-<script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	
+	<script>
+        // SUPABASE CONFIGURATION
+        const SUPABASE_URL = 'https://bsrkmrftzhyprmcgzlln.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzcmttcmZ0emh5cHJtY2d6bGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMTczNTYsImV4cCI6MjA3Mjc5MzM1Nn0.eipabTRkdctNg2yjdTubhyoVw4zt97gzV7P4whCqd0s';
+        
+           // Initialize Supabase client - Use window.supabase
+    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Then rename the variable
+    const supabase = supabaseInstance;
+
+  // Optional: check if user is logged in before showing quiz
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      console.log("No session found, redirecting to login...");
+      window.location.href = "index.html";
+    } else {
+      console.log("Quiz page loaded with session:", session.user.email);
+    }
+  });
+
+	
 const originalQuestions = [
 	 {
         "question": "What does CPU stand for?",
@@ -2228,3 +2228,4 @@ window.showSummary = showSummary;
 </script>
 </body>
 </html>
+
