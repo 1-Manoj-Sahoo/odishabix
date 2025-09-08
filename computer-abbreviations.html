@@ -83,10 +83,16 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzcmttcmZ0emh5cHJtY2d6bGxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyMTczNTYsImV4cCI6MjA3Mjc5MzM1Nn0.eipabTRkdctNg2yjdTubhyoVw4zt97gzV7P4whCqd0s';
         
            // Initialize Supabase client - Use window.supabase
-    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true
+	    }
+ 		 });
 
     // Then rename the variable
     const supabase = supabaseInstance;
+	console.log("Supabase initialized on quiz page:", supabase);
 
   // Optional: check if user is logged in before showing quiz
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -2228,5 +2234,6 @@ window.showSummary = showSummary;
 </script>
 </body>
 </html>
+
 
 
