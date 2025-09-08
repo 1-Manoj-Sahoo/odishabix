@@ -680,6 +680,7 @@
  	auth: {
     persistSession: true,   // ✅ make sure session is saved
     autoRefreshToken: true  // ✅ refresh session automatically
+	detectSessionInUrl: true
   	}
 	});
 
@@ -820,66 +821,70 @@
         renderTopics();
     });
 
-	async function checkAuthState() {
-  showLoading(true);
-  console.log("Auth check started...");
+	// ====== Main Auth Check ======
+  async function checkAuthState() {
+    showLoading(true);
+    console.log("Auth check started...");
 
-  try {
-    // 1. Try to get session from Supabase
-    console.log("Calling getSession...");
-    const { data, error } = await supabase.auth.getSession();
+    try {
+      console.log("Calling getSession...");
 
-    if (error) {
-      console.error("getSession error:", error);
-    }
+      // Add timeout to prevent hanging forever
+      const sessionPromise = supabase.auth.getSession();
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("getSession timeout after 3s")), 3000)
+      );
 
-    console.log("getSession result:", data);
+      const { data, error } = await Promise.race([sessionPromise, timeout]);
 
-    if (data?.session?.user) {
-      // ✅ User is logged in
-      console.log("✅ Session found:", data.session.user.email);
-      currentUser = data.session.user;
-      isAuthenticated = true;
-      await loadUserProfile();
-      updateUIForAuthenticatedUser();
-    } else {
-      // 2. If no session, fall back to getUser()
-      console.log("⚠️ No session, checking getUser...");
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      console.log("getUser result:", userData, userError);
-
-      if (userError) {
-        console.error("getUser error:", userError);
+      if (error) {
+        console.error("getSession error:", error);
       }
 
-      if (userData?.user) {
-        // ✅ User found via getUser()
-        console.log("✅ User found:", userData.user.email);
-        currentUser = userData.user;
+      console.log("getSession result:", data);
+
+      if (data?.session?.user) {
+        // ✅ User is logged in
+        console.log("✅ Session found:", data.session.user.email);
+        currentUser = data.session.user;
         isAuthenticated = true;
         await loadUserProfile();
         updateUIForAuthenticatedUser();
       } else {
-        // ❌ No user at all → show login modal
-        console.log("❌ No active session → showing login modal");
-        isAuthenticated = false;
-        updateUIForGuestUser();
-        showAuthModal();
+        // ⚠️ No session → try getUser()
+        console.log("⚠️ No session, checking getUser...");
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        console.log("getUser result:", userData, userError);
+
+        if (userData?.user) {
+          console.log("✅ User found:", userData.user.email);
+          currentUser = userData.user;
+          isAuthenticated = true;
+          await loadUserProfile();
+          updateUIForAuthenticatedUser();
+        } else {
+          console.log("❌ No active session → showing login modal");
+          isAuthenticated = false;
+          updateUIForGuestUser();
+          showAuthModal();
+        }
       }
+    } catch (err) {
+      console.error("Auth check fatal error:", err);
+      isAuthenticated = false;
+      updateUIForGuestUser();
+      showAuthModal();
+    } finally {
+      console.log("Auth check finished → hiding loader");
+      showLoading(false);
     }
-  } catch (err) {
-    console.error("Auth check fatal error:", err);
-    isAuthenticated = false;
-    updateUIForGuestUser();
-    showAuthModal();
-  } finally {
-    // ✅ Always hide loader
-    console.log("Auth check finished → hiding loader");
-    showLoading(false);
   }
-}
 
-
+	 // ====== Run on Page Load ======
+ 	 document.addEventListener("DOMContentLoaded", () => {
+    console.log("Root → checkAuthState running...");
+    checkAuthState();
+ 	 });
 
     // Setup event listeners
     function setupEventListeners() {
@@ -924,12 +929,12 @@
         });
     }
 
-    function showLoading(show) {
+     // ====== Loader helper ======
+  function showLoading(show) {
     const overlay = document.getElementById("loadingOverlay");
     if (!overlay) return;
     overlay.style.display = show ? "flex" : "none";
-    }
-
+  }
 
     // Show authentication modal
     function showAuthModal() {
@@ -1427,6 +1432,7 @@
 </body>
 
 </html>
+
 
 
 
