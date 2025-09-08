@@ -818,14 +818,12 @@
 	
     async function checkAuthState() {
     showLoading(true);
+    console.log("Auth check started...");
 
     try {
         // First check session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-            console.error("Session error:", sessionError.message);
-        }
+        console.log("getSession result:", session, sessionError);
 
         if (session?.user) {
             console.log("Session found:", session.user.email);
@@ -834,12 +832,10 @@
             await loadUserProfile();
             updateUIForAuthenticatedUser();
         } else {
-            // No session, try getUser
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            console.log("No session, checking getUser()...");
 
-            if (userError) {
-                console.error("User fetch error:", userError.message);
-            }
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            console.log("getUser result:", user, userError);
 
             if (user) {
                 console.log("User found:", user.email);
@@ -848,7 +844,7 @@
                 await loadUserProfile();
                 updateUIForAuthenticatedUser();
             } else {
-                console.log("No active session. Showing login modal.");
+                console.log("No active session → showing login modal");
                 isAuthenticated = false;
                 updateUIForGuestUser();
                 showAuthModal();
@@ -860,10 +856,11 @@
         updateUIForGuestUser();
         showAuthModal();
     } finally {
-        // ✅ ALWAYS hide loader
+        console.log("Auth check finished → hiding loader");
         showLoading(false);
     }
 }
+
 
 
 
@@ -1413,5 +1410,6 @@
 </body>
 
 </html>
+
 
 
