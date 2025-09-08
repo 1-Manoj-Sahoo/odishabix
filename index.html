@@ -820,38 +820,47 @@
         renderTopics();
     });
 
-	
-    async function checkAuthState() {
+	async function checkAuthState() {
   showLoading(true);
   console.log("Auth check started...");
 
   try {
+    // 1. Try to get session from Supabase
     console.log("Calling getSession...");
     const { data, error } = await supabase.auth.getSession();
-    console.log("getSession result:", data, error);
 
     if (error) {
-      console.error("Session error:", error.message);
+      console.error("getSession error:", error);
     }
 
+    console.log("getSession result:", data);
+
     if (data?.session?.user) {
+      // ✅ User is logged in
       console.log("✅ Session found:", data.session.user.email);
       currentUser = data.session.user;
       isAuthenticated = true;
       await loadUserProfile();
       updateUIForAuthenticatedUser();
     } else {
+      // 2. If no session, fall back to getUser()
       console.log("⚠️ No session, checking getUser...");
       const { data: userData, error: userError } = await supabase.auth.getUser();
       console.log("getUser result:", userData, userError);
 
+      if (userError) {
+        console.error("getUser error:", userError);
+      }
+
       if (userData?.user) {
+        // ✅ User found via getUser()
         console.log("✅ User found:", userData.user.email);
         currentUser = userData.user;
         isAuthenticated = true;
         await loadUserProfile();
         updateUIForAuthenticatedUser();
       } else {
+        // ❌ No user at all → show login modal
         console.log("❌ No active session → showing login modal");
         isAuthenticated = false;
         updateUIForGuestUser();
@@ -864,11 +873,11 @@
     updateUIForGuestUser();
     showAuthModal();
   } finally {
+    // ✅ Always hide loader
     console.log("Auth check finished → hiding loader");
     showLoading(false);
   }
 }
-
 
 
 
@@ -1418,6 +1427,7 @@
 </body>
 
 </html>
+
 
 
 
