@@ -1398,6 +1398,11 @@
             userModal.style.display = 'none';
         }
     });
+	
+	document.addEventListener("DOMContentLoaded", () => {
+    console.log("Root → checkAuthState running...");
+    checkAuthState();
+	});
 
 	// Prevent infinite loading overlay (auto-hide after 5s)
 	setTimeout(() => {
@@ -1408,4 +1413,5 @@
 </body>
 
 </html>
+
 
