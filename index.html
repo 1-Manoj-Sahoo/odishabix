@@ -676,7 +676,12 @@
 
     
     // Initialize Supabase client - Use window.supabase
-    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+ 	auth: {
+    persistSession: true,   // ✅ make sure session is saved
+    autoRefreshToken: true  // ✅ refresh session automatically
+  	}
+	});
 
     // Then rename the variable
     const supabase = supabaseInstance;
@@ -1410,6 +1415,7 @@
 </body>
 
 </html>
+
 
 
 
